@@ -1,2 +1,5 @@
 v1.0
 update Action, Group, Object_Detection, VOTT, XML.
+
+v1.1
+bug fix: update extension(png -> jpg) in vott files.

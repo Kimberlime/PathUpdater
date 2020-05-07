@@ -19,7 +19,7 @@ def list_only_dir_sorted(input_path):
 
 def get_package_name(xml_file_list):
     tree = elemTree.parse(xml_file_list[0])
-    package_name = tree.getroot().getchildren()[0].attrib['package']
+    package_name = list(tree.getroot())[0].attrib['package']
     return package_name
 
 
@@ -142,6 +142,8 @@ def process_vott(input_path, output_path, package_name, new_source_directory):
                 raise Exception()
             name_set.add(old_file_name)
             new_file_name = '{}_{}'.format(package_name, old_file_name)
+            if new_file_name.endswith('png'):
+                new_file_name = new_file_name[:-3] + 'jpg'
             vott_dict['asset']['name'] = new_file_name
 
             new_id_source = 'file:'+os.path.join(new_source_directory, new_file_name)
@@ -156,6 +158,43 @@ def process_vott(input_path, output_path, package_name, new_source_directory):
                 json.dump(vott_dict, f, indent=4)
 
 
+def process_for_one_app(input_path, output_path):
+    input_folder_list = ['action tag', 'grouping', 'images', 'vott', 'xml']
+    output_folder_list = ['Action', 'Group', 'Object_Detection', 'VOTT', 'XML']
+    index_action = 0
+    index_group = 1
+    index_od = 2
+    index_vott = 3
+    index_xml = 4
+
+    input_folders = list_only_dir_sorted(input_path)
+    if not input_folders == input_folder_list:
+        print('input path does not have appropriate folder structure')
+        print(input_folders)
+        print(input_folder_list)
+        return
+
+    for i, (input_folder, output_folder) in enumerate(zip (input_folder_list, output_folder_list)):
+        input_folder_path = os.path.join(input_path, input_folder)
+        input_folder_list[i] = input_folder_path
+
+        output_folder_path = os.path.join(output_path, output_folder)
+        os.makedirs(output_folder_path, exist_ok=True)
+        output_folder_list[i] = output_folder_path
+
+    # xml should pe processed first to get a package name.
+    package_name = process_xml(input_folder_list[index_xml], output_folder_list[index_xml])
+
+    process_image(input_folder_list[index_od], output_folder_list[index_od], package_name)
+
+    process_action(input_folder_list[index_action], output_folder_list[index_action], package_name)
+
+    process_group(input_folder_list[index_group], output_folder_list[index_group], package_name)
+
+    new_source_directory = '/home/embian/dataset/MAUI/images'
+    process_vott(input_folder_list[index_vott], output_folder_list[index_vott], package_name, new_source_directory)
+
+
 def main(argv):
     input_path = argv[1]
     output_path = argv[2]
@@ -168,44 +207,10 @@ def main(argv):
         print('output path does not exit.')
         return
 
-    input_folder_list = ['action tag', 'grouping', 'images', 'vott', 'xml']
-    output_folder_list = ['Action', 'Group', 'Object_Detection', 'VOTT', 'XML']
-    index_action = 0
-    index_group = 1
-    index_od = 2
-    index_vott = 3
-    index_xml = 4
-
     for i in list_only_dir_sorted(input_path):
-        app_folder_path = os.path.join(input_path, i)
-        print('start processing: {}'.format(app_folder_path))
-
-        input_folders = list_only_dir_sorted(app_folder_path)
-        if not input_folders == input_folder_list:
-            print('input path does not have appropriate folder structure')
-            print(input_folders)
-            print(input_folder_list)
-            return
-
-        for j in range(len(output_folder_list)):
-            output_folder_path = os.path.join(output_path, output_folder_list[j])
-            os.makedirs(output_folder_path, exist_ok=True)
-            output_folder_list[j] = output_folder_path
-
-        for k, input_folder in enumerate(input_folder_list):
-            input_folder_path = os.path.join(app_folder_path, input_folder)
-            input_folder_list[k] = input_folder_path
-
-
-        # xml should pe processed first to get a package name.
-        package_name = process_xml(input_folder_list[index_xml], output_folder_list[index_xml])
-        process_image(input_folder_list[index_od], output_folder_list[index_od], package_name)
-        process_action(input_folder_list[index_action], output_folder_list[index_action], package_name)
-        process_group(input_folder_list[index_group], output_folder_list[index_group], package_name)
-
-        new_source_directory = '/home/embian/dataset/MAUI/images'
-        process_vott(input_folder_list[index_vott], output_folder_list[index_vott], package_name, new_source_directory)
-
+        processing_folder = os.path.join(input_path, i)
+        print('start processing: {}'.format(processing_folder))
+        process_for_one_app(processing_folder, output_path)
         print('Done!')
 
 
