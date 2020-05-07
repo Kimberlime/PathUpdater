@@ -3,3 +3,6 @@ update Action, Group, Object_Detection, VOTT, XML.
 
 v1.1
 bug fix: update extension(png -> jpg) in vott files.
+
+v1.2
+vott2coco
