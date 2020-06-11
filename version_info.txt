@@ -6,3 +6,6 @@ bug fix: update extension(png -> jpg) in vott files.
 
 v1.2
 vott2coco
+
+v1.3
+add change_vott_path only to change paths.

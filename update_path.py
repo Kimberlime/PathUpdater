@@ -158,7 +158,7 @@ def process_vott(input_path, output_path, package_name, new_source_directory):
                 json.dump(vott_dict, f, indent=4)
 
 
-def process_for_one_app(input_path, output_path):
+def process_for_one_app(input_path, output_path, new_source_directory = '/home/embian/dataset/MAUI/images'):
     input_folder_list = ['action tag', 'grouping', 'images', 'vott', 'xml']
     output_folder_list = ['Action', 'Group', 'Object_Detection', 'VOTT', 'XML']
     index_action = 0
@@ -191,27 +191,54 @@ def process_for_one_app(input_path, output_path):
 
     process_group(input_folder_list[index_group], output_folder_list[index_group], package_name)
 
-    new_source_directory = '/home/embian/dataset/MAUI/images'
     process_vott(input_folder_list[index_vott], output_folder_list[index_vott], package_name, new_source_directory)
 
 
-def main(argv):
-    input_path = argv[1]
-    output_path = argv[2]
-
+def process_for_multiple_apps(input_path, output_path):
     if not os.path.exists(input_path):
         print('input path does not exit.')
         return
 
     if not os.path.exists(output_path):
-        print('output path does not exit.')
-        return
+        os.mkdir(output_path)
 
     for i in list_only_dir_sorted(input_path):
         processing_folder = os.path.join(input_path, i)
         print('start processing: {}'.format(processing_folder))
         process_for_one_app(processing_folder, output_path)
         print('Done!')
+
+
+def change_vott_path(input_path, output_path, new_source_directory):
+    for asset in os.listdir(input_path):
+        if asset.endswith('.json'):
+            old_path = os.path.join(input_path, asset)
+
+            with open(os.path.join(old_path)) as f:
+                vott_dict = json.load(f)
+
+            old_file_name = vott_dict['asset']['name']
+
+            new_file_path = 'file:'+os.path.join(new_source_directory, old_file_name)
+            new_id = hashlib.md5(new_file_path.encode('utf-8')).hexdigest()
+            vott_dict['asset']['path'] = new_file_path
+            vott_dict['asset']['id'] = new_id
+            new_path = os.path.join(output_path, new_id+'-asset.json')
+            # new_path = os.path.join(output_path, asset)
+
+            with open(new_path, 'w') as f:
+                json.dump(vott_dict, f, indent=4)
+
+
+def main(argv):
+    input_path = argv[1]
+    output_path = argv[2]
+
+    new_source_directory = '/home/embian/dataset/MAUI/images'
+    process_for_multiple_apps(input_path, output_path, new_source_directory)
+
+    # change_vott_path('/home/kimberly/projects/ui_data_v2/ui_dataset/ui/test_vott', '/home/kimberly/projects/ui_data_v2/ui_dataset/ui/test_vott_changed', 'd:/ui_dataset/ui/test')
+
 
 
 if __name__ == '__main__':
