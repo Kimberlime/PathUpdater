@@ -12,3 +12,6 @@ add change_vott_path only to change paths.
 
 v1.3
 add creat_vott.py to add vott file.
+
+v1.4
+find data with overlapped bounding boxes to remove the boxes with VOTT.
