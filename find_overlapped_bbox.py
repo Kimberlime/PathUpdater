@@ -28,6 +28,10 @@ def calculate_iou(box1, box2):
     return iou
 
 
+def add_two_int(a, b):
+    return a + b
+
+
 def main():
     asset_path = 'c:/Users/kk316/Documents/ui_data_v10/ui/train_vott'
     folder_path = 'c:/Users/kk316/Documents/ui_data_v10/ui/train'

@@ -15,3 +15,6 @@ add creat_vott.py to add vott file.
 
 v1.4
 find data with overlapped bounding boxes to remove the boxes with VOTT.
+
+v1.5
+add add_two_int function.
